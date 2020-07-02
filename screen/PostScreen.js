@@ -23,20 +23,19 @@ export default class PostScreen extends React.Component {
     image: null,
   };
   handlePost = () => {
-    Fire.shared.createdata();
-    // console.log('text :', this.state.text.trim());
-    // Fire.shared
-    //   .addPost({text: this.state.text.trim(), localuri: this.state.image})
-    //   .then(ref => {
-    //     this.setState({
-    //       text: '',
-    //       image: null,
-    //     });
-    //     this.props.navigation.goBack();
-    //   })
-    //   .catch(error => {
-    //     alert(error.serverResponse);
-    //   });
+    // Fire.shared.createdata();
+    Fire.shared
+      .addPost({text: this.state.text.trim(), localuri: this.state.image})
+      .then(ref => {
+        this.setState({
+          text: '',
+          image: null,
+        });
+        this.props.navigation.goBack();
+      })
+      .catch(error => {
+        alert(error.serverResponse);
+      });
   };
   pickImage = async () => {
     ImagePicker.openPicker({
