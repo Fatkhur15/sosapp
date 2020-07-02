@@ -12,8 +12,6 @@ import MessageScreen from './screen/MessageScreen';
 import NotificationScreen from './screen/NotificationScreen';
 import PostScreen from './screen/PostScreen';
 import ProfileScreen from './screen/ProfilScreen';
-import FirebaseKeys from './config';
-import * as firebase from 'firebase';
 
 const AppContainer = createStackNavigator(
   {
