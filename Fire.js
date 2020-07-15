@@ -7,6 +7,23 @@ class Fire {
   constructor() {
     firebase.initializeApp(FirebaseKeys);
   }
+  editPost = async ({text, keys, status, localuri}) => {
+    console.log('desc = ', text);
+    console.log('kunci = ', keys);
+    var remoteUri = localuri;
+    if (status === 1) {
+      remoteUri = await this.uploadPhotoAsync(localuri);
+    }
+    console.log('clicked edit');
+    this.realdatabase
+      .ref('posts/' + this.uid)
+      .child(keys)
+      .update({
+        text,
+        timestamp: this.timestamp,
+        image: remoteUri,
+      });
+  };
   addPost = async ({text, localuri}) => {
     console.log('clicked post');
     const remoteUri = await this.uploadPhotoAsync(localuri);
@@ -45,9 +62,6 @@ class Fire {
     });
   };
 
-  get firestore() {
-    return firebase.firestore();
-  }
   get realdatabase() {
     return firebase.database();
   }

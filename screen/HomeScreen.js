@@ -2,7 +2,15 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable no-undef */
 import React from 'react';
-import {View, Text, StyleSheet, FlatList, Image} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Image,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Entypo';
 import Fire from '../Fire';
 import moment from 'moment';
@@ -40,30 +48,62 @@ export default class HomeScreen extends React.Component {
     this.state = {
       list: [],
       loading: true,
+      isloading: false,
     };
   }
-  async componentDidMount() {
-    //Have a try and catch block for catching errors.
+  delete = (id, key) => {
+    Alert.alert(
+      'Konfirmasi',
+      'Anda yakin ingin menghapus?',
+      [
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => handle(id, key)},
+      ],
+      {cancelable: false},
+      (handle = (i, k) => {
+        firebase
+          .database()
+          .ref('posts/' + i + '/' + k)
+          .remove();
+        this.loadPost();
+      }),
+    );
+  };
+  loadPost = () => {
+    var id = (firebase.auth().currentUser || {}).uid;
     try {
       firebase
         .database()
-        .ref('posts')
+        .ref('posts/' + id)
         .on('value', snapshot => {
-          // var li = [];
+          var li = [];
+          this.setState({list: [], isloading: true});
           snapshot.forEach(child => {
-            this.state.list.push({
+            li.push({
               key: child.key,
               image: child.val().image,
               timestamp: child.val().timestamp,
               text: child.val().text,
+              uid: child.val().uid,
             });
           });
           console.log(this.state.list);
-          this.setState({list: this.state.list, loading: false});
+          this.setState({
+            list: li,
+            loading: false,
+            isloading: false,
+          });
         });
     } catch (err) {
       console.log('Error fetching data-----------', err);
     }
+  };
+  async componentDidMount() {
+    this.loadPost();
   }
   componentWillUnmount() {
     this.setState({list: []});
@@ -100,7 +140,29 @@ export default class HomeScreen extends React.Component {
               color="#737888"
               style={{marginRight: 16}}
             />
-            <Icon name="message" size={24} color="#737888" />
+            <TouchableOpacity
+              onPress={() =>
+                this.props.navigation.navigate('Message', {
+                  texdesc: post.text,
+                  kunci: post.key,
+                  img: post.image,
+                })
+              }>
+              <Icon
+                name="message"
+                size={24}
+                style={{marginRight: 16}}
+                color="#737888"
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => this.delete(post.uid, post.key)}>
+              <Icon
+                name="circle-with-cross"
+                size={24}
+                color="#737888"
+                style={{marginRight: 16}}
+              />
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -118,6 +180,8 @@ export default class HomeScreen extends React.Component {
           renderItem={({item}) => this.renderPost(item)}
           keyExtractor={item => item.key}
           showsVerticalScrollIndicator={false}
+          onRefresh={this.loadPost}
+          refreshing={this.state.isloading}
         />
       </View>
     );
